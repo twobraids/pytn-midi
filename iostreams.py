@@ -1,7 +1,8 @@
 from mido import (
     MidiFile,
     MidiTrack,
-    Message
+    Message,
+    midifiles
 )
 import sys
 
@@ -26,9 +27,13 @@ class FileInputStream(FileStream):
         super(FileInputStream, self).__init__(config)
         self.midi_file = MidiFile(self.pathname)
 
+        # The file may contain many tracks. Merge them into a single track,
+        # since the pipeline does not care about tracks.
+        track = midifiles.tracks.merge_tracks(self.midi_file.tracks)
+        self.midi_file.tracks = [track]
+
     def __iter__(self):
-        for message in self.midi_file.play():
-            yield message
+        return iter(self.midi_file.tracks[0])
 
 
 class FileOutputStream(FileStream):
