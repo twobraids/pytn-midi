@@ -19,28 +19,27 @@ class FileStream(RequiredConfig):
     def __init__(self, config):
         self.config = config
         self.pathname = config.pathname
-        self.midi_file = MidiFile(self.pathname)
 
 
 class FileInputStream(FileStream):
     def __init__(self, config):
-        super(self, FileStream).__init__(config)
+        super(FileInputStream, self).__init__(config)
         self.midi_file = MidiFile(self.pathname)
 
     def __iter__(self):
-        for mesage in self.midi_file.play():
+        for message in self.midi_file.play():
             yield message
 
 
 class FileOutputStream(FileStream):
     def __init__(self, config):
-        super(self, FileStream).__init__(config)
+        super(FileOutputStream, self).__init__(config)
         self.output_file = MidiFile()
         self.track = MidiTrack()
-        self.output_file.append(self.track)
+        self.output_file.tracks.append(self.track)
 
     def send(self, message):
-        self.output_file.append(message)
+        self.track.append(message)
 
     def close(self):
         self.output_file.save(self.pathname)
