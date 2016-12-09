@@ -76,3 +76,48 @@ class StdOutStream(RequiredConfig):
 
     def close(self):
         pass
+
+from mido.sockets import (
+    PortServer,
+    connect
+)
+
+class NetworkStream(RequiredConfig):
+    required_config = Namespace()
+    required_config.add_option(
+        name="port",
+        default=9000,
+    )
+    required_config.add_option(
+        name="host",
+        default="localhost",
+    )
+
+    def __init__(self, config):
+        self.config = config
+        self.host = config.host
+        self.port = config.port
+
+
+class NetworkInStream(NetworkStream):
+
+    def __init__(self, config):
+        super(NetworkInStream, self).__init__(config)
+        self.server = PortServer(self.host, self.port)
+
+    def __iter__(self):
+        for message in self.server:
+            yield message
+
+
+class NetworkOutStream(NetworkStream):
+
+    def __init__(self, config):
+        super(NetworkOutStream, self).__init__(config)
+        self.connection = connect(self.host, self.port)
+
+    def send(self, message):
+        self.connection.send(message)
+
+    def close(self):
+        self.connection.close()
